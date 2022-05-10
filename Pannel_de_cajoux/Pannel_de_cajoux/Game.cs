@@ -11,6 +11,8 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
+using System.Media;
 
 namespace Pannel_de_cajoux
 {
@@ -29,8 +31,10 @@ namespace Pannel_de_cajoux
         private int CursorY = 15;
         private readonly Mutex mut = new Mutex();
         private int score;
-
-        public Game()
+        private int id;
+        private string music;
+        SoundPlayer NOST;
+        public Game(int _id, string _music)
         {
             InitializeComponent();
             timer1.Interval = 1000;
@@ -39,6 +43,11 @@ namespace Pannel_de_cajoux
             timer1.Start();
             timer2.Start();
             timer3.Start();
+            id = _id;
+            music = _music;
+            NOST = new SoundPlayer(@"..\..\music\" + music + ".wav");
+            NOST.Play();
+            NOST.PlayLooping();
 
             timerLabel.Text = "0 sec";
             gameGrid.Width = 300;
@@ -50,7 +59,7 @@ namespace Pannel_de_cajoux
             gameGrid.Image = baseImage;
             begin();
             generateBlock();
-            displayCursor();
+            //displayCursor();
 
             Task t = Task.Run(() => { while (true) { displayCursor(); } });
         }
@@ -207,6 +216,32 @@ namespace Pannel_de_cajoux
             {
                 timer1.Stop();
                 timer2.Stop();
+                NOST.Stop();
+                string query = String.Format("INSERT INTO highScore (UserId, score) VALUES ('{0}', '{1}')", id, score);
+                string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
+                MySqlConnection connection = new MySqlConnection(@connString);
+                MySqlCommand command = new MySqlCommand(query, connection);
+                try
+                {
+                    connection.Open();
+
+                    command.ExecuteNonQuery();
+
+                    Console.WriteLine("ok");
+
+                    Connexion obj = new Connexion();
+                    obj.Show();
+                    this.Hide();
+
+                }
+                catch (MySqlException f)
+                {
+                    Console.WriteLine(f.Message + connString);
+                }
+                finally
+                {
+                    connection.Close();
+                }
                 MessageBox.Show($"Game Over");
                 Application.Exit();
                 Application.Restart();

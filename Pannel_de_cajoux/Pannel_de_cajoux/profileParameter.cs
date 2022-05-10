@@ -127,5 +127,12 @@ namespace Pannel_de_cajoux
                 connection.Close();
             }
         }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            Menu obj = new Menu(id);
+            obj.Show();
+            this.Hide();
+        }
     }
 }

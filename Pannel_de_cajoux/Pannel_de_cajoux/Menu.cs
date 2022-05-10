@@ -13,29 +13,31 @@ namespace Pannel_de_cajoux
     public partial class Menu : Form
     {
         public int id;
-        public Menu(int ids)
+        public string music;
+        public Menu(int ids, string _music = "Tetris_theme")
         {
             InitializeComponent();
             id = ids;
+            music = _music;
         }
 
         private void playButton_Click(object sender, EventArgs e)
         {
-            Game obj = new Game();
+            Game obj = new Game(id,music);
             obj.Show();
             this.Hide();
         }
 
         private void optionButton_Click(object sender, EventArgs e)
         {
-            Options obj = new Options();
+            Options obj = new Options(id, music);
             obj.Show();
             this.Hide();
         }
 
         private void scoreButton_Click(object sender, EventArgs e)
         {
-            Score obj = new Score();
+            Score obj = new Score(id);
             obj.Show();
             this.Hide();
         }

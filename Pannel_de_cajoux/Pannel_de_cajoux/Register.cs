@@ -49,5 +49,12 @@ namespace Pannel_de_cajoux
                 connection.Close();
             }
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Connexion obj = new Connexion();
+            obj.Show();
+            this.Hide();
+        }
     }
 }

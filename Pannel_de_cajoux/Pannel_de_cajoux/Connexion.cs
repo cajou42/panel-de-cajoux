@@ -60,7 +60,15 @@ namespace Pannel_de_cajoux
             finally
             {
                 connection.Close();
+                Console.WriteLine("closed");
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Register obj = new Register();
+            obj.Show();
+            this.Hide();
         }
     }
 }

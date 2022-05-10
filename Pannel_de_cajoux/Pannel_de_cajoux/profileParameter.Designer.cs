@@ -40,6 +40,7 @@ namespace Pannel_de_cajoux
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.infoLabel = new System.Windows.Forms.Label();
+            this.button5 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label3
@@ -133,16 +134,27 @@ namespace Pannel_de_cajoux
             // infoLabel
             // 
             this.infoLabel.AutoSize = true;
-            this.infoLabel.Location = new System.Drawing.Point(388, 291);
+            this.infoLabel.Location = new System.Drawing.Point(363, 291);
             this.infoLabel.Name = "infoLabel";
             this.infoLabel.Size = new System.Drawing.Size(0, 17);
             this.infoLabel.TabIndex = 17;
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(702, 402);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 26);
+            this.button5.TabIndex = 18;
+            this.button5.Text = "back";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // profileParameter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.button5);
             this.Controls.Add(this.infoLabel);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button3);
@@ -174,5 +186,6 @@ namespace Pannel_de_cajoux
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Label infoLabel;
+        private System.Windows.Forms.Button button5;
     }
 }
