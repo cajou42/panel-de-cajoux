@@ -37,6 +37,7 @@ namespace Pannel_de_cajoux
             this.timer2 = new System.Windows.Forms.Timer(this.components);
             this.timer3 = new System.Windows.Forms.Timer(this.components);
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.labelBonus = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.gameGrid)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -88,19 +89,29 @@ namespace Pannel_de_cajoux
             this.pictureBox1.Size = new System.Drawing.Size(75, 75);
             this.pictureBox1.TabIndex = 3;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            // 
+            // labelBonus
+            // 
+            this.labelBonus.AutoSize = true;
+            this.labelBonus.Location = new System.Drawing.Point(592, 202);
+            this.labelBonus.Name = "labelBonus";
+            this.labelBonus.Size = new System.Drawing.Size(74, 17);
+            this.labelBonus.TabIndex = 4;
+            this.labelBonus.Text = "bonus : ok";
             // 
             // Game
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 603);
+            this.Controls.Add(this.labelBonus);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.timerLabel);
             this.Controls.Add(this.scoreLabel);
             this.Controls.Add(this.gameGrid);
             this.Name = "Game";
             this.Text = "Pannel de Cajoux";
+            this.Load += new System.EventHandler(this.Game_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Game_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.gameGrid)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
@@ -118,5 +129,6 @@ namespace Pannel_de_cajoux
         private System.Windows.Forms.Timer timer2;
         private System.Windows.Forms.Timer timer3;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Label labelBonus;
     }
 }

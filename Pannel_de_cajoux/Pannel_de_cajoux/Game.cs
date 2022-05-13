@@ -41,6 +41,8 @@ namespace Pannel_de_cajoux
         private MySqlCommand query2;
         private MySqlCommand query3;
         private MySqlCommand query4;
+        private string bonus;
+        private int cooldown;
 
         DispatcherTimer dispacher = new DispatcherTimer();
         public Game(int _id, string _music)
@@ -72,13 +74,14 @@ namespace Pannel_de_cajoux
             bases = Graphics.FromImage(baseImage);
             bases.FillRectangle(Brushes.LightGray, 0, 0, baseImage.Width, baseImage.Height);
             gameGrid.Image = baseImage;
-            pictureBox1.Image = resizeImage(new Bitmap(@"..\..\images\pixel_bomb.png"), new Size(50, 50));
             begin();
             generateBlock();
             displayCursor();
             thread = new Thread(displayCursor);
             thread.Start();
         }
+
+
 
         private void displayCursorEvent(object sender, EventArgs e)
         {
@@ -140,6 +143,15 @@ namespace Pannel_de_cajoux
         {
             tick++;
             timerLabel.Text = tick.ToString() + " sec";
+            if(cooldown > 0)
+            {
+                cooldown--;
+                labelBonus.Text = "bonus ready in " + cooldown;
+            }
+            else if (cooldown == 0)
+            {
+                labelBonus.Text = "bonus : ok";
+            }
         }
 
         public static Bitmap resizeImage(Bitmap imgToResize, Size size)
@@ -264,6 +276,11 @@ namespace Pannel_de_cajoux
             else if (e.KeyCode == Keys.Space)
             {
                 exchange();
+            }
+            else if(e.KeyCode == Keys.E)
+            {
+                Console.WriteLine(bonus);
+                executeBonus(bonus);
             }
             else
             {
@@ -581,7 +598,87 @@ namespace Pannel_de_cajoux
             return (0);
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void executeBonus(string bonus)
+        {
+            mut.WaitOne();
+            try
+            {
+                Bitmap image = new Bitmap(@"..\..\images\case_vide.png");
+                image = resizeImage(image, new Size(25, 25));
+                TextureBrush tBrush = new TextureBrush(image);
+                if(cooldown == 0)
+                {
+                    switch (bonus)
+                    {
+                        case "bomb":
+                            Console.WriteLine("Bomb!");
+                            insert.FillRectangle(tBrush, CursorX * 25, CursorY * 25, 25, 25);
+                            insert.FillRectangle(tBrush, CursorX + 1 * 25, CursorY * 25, 25, 25);
+                            insert.FillRectangle(tBrush, CursorX - 1 * 25, CursorY * 25, 25, 25);
+                            insert.FillRectangle(tBrush, CursorX * 25, CursorY + 1 * 25, 25, 25);
+                            insert.FillRectangle(tBrush, CursorX * 25, CursorY - 1 * 25, 25, 25);
+                            area[CursorX, CursorY] = 0;
+                            area[CursorX + 1, CursorY] = 0;
+                            area[CursorX - 1, CursorY] = 0;
+                            area[CursorX, CursorY + 1] = 0;
+                            area[CursorX, CursorY - 1] = 0;
+                            score += 2;
+                            scoreLabel.Text = "score : " + score;
+                            cooldown = 60;
+                            return;
+                        case "Thunder":
+                            Console.WriteLine("Thunder!");
+                            for (int h = 0; h < 16; h++)
+                            {
+                                for (int i = 0; i < 12; i++)
+                                {
+                                    if (area[i, h] == area[CursorX, CursorY])
+                                    {
+                                        insert.FillRectangle(tBrush, i * 25, h * 25, 25, 25);
+                                        area[i, h] = 0;
+                                    }
+                                }
+                            }
+                            cooldown = 60;
+                            return;
+                        case "TimeStop":
+                            Console.WriteLine("Stop!");
+                            timer2.Stop();
+                            var pause = new Stopwatch();
+                            pause.Start();
+                            while (pause.ElapsedMilliseconds != 10000)
+                            {
+                                continue;
+                            }
+                            pause.Stop();
+                            timer2.Start();
+                            cooldown = 70;
+                            Console.WriteLine("finished!");
+                            return;
+                        case "circularBlade":
+                            Console.WriteLine("circular Blade!");
+                            for (int i = 0; i < 12; i++)
+                            {
+                                insert.FillRectangle(tBrush, i * 25, 15 * 25, 25, 25);
+                                insert.FillRectangle(tBrush, i * 25, 14 * 25, 25, 25);
+                                area[i, 15] = 0;
+                                area[i, 14] = 0;
+                            }
+                            score += 3;
+                            scoreLabel.Text = "score : " + score;
+                            cooldown = 70;
+                            return;
+                    }
+                }
+
+            }
+            finally
+            {
+                mut.ReleaseMutex();
+            }
+        }
+
+        private void Game_Load(object sender, EventArgs e)
         {
             string bonus1 = String.Format("SELECT Bomb FROM bonus WHERE Id = '{0}'", id);
             string bonus2 = String.Format("SELECT Thunder FROM bonus WHERE Id = '{0}'", id);
@@ -601,27 +698,31 @@ namespace Pannel_de_cajoux
                 object reader3 = query3.ExecuteScalar();
                 object reader4 = query4.ExecuteScalar();
 
-                string bonus = "bomb";
+                bonus = "bomb";
+                pictureBox1.Image = resizeImage(new Bitmap(@"..\..\images\pixel_bomb.png"), new Size(50, 50));
 
                 if (Convert.ToInt32(reader2) == 1)
                 {
                     command = new MySqlCommand(bonus2, connection);
                     bonus = "Thunder";
+                    pictureBox1.Image = resizeImage(new Bitmap(@"..\..\images\pixel_thunder.png"), new Size(50, 50));
+
                 }
                 else if (Convert.ToInt32(reader3) == 1)
                 {
                     command = new MySqlCommand(bonus3, connection);
                     bonus = "TimeStop";
+                    pictureBox1.Image = resizeImage(new Bitmap(@"..\..\images\pixel_hourglass.png"), new Size(50, 50));
+
                 }
                 else if (Convert.ToInt32(reader4) == 1)
                 {
                     command = new MySqlCommand(bonus4, connection);
                     bonus = "circularBlade";
+                    pictureBox1.Image = resizeImage(new Bitmap(@"..\..\images\circular_blade.png"), new Size(50, 50));
+
                 }
-
                 Console.WriteLine("ok");
-
-                executeBonus(bonus);
 
             }
             catch (MySqlException f)
@@ -631,25 +732,6 @@ namespace Pannel_de_cajoux
             finally
             {
                 connection.Close();
-            }
-        }
-
-        private void executeBonus(string bonus)
-        {
-            switch (bonus)
-            {
-                case "bomb":
-                    Console.WriteLine("Bomb!");
-                    return;
-                case "Thunder":
-                    Console.WriteLine("Thunder!");
-                    return;
-                case "TimeStop":
-                    Console.WriteLine("Stop!");
-                    return;
-                case "circularBlade":
-                    Console.WriteLine("circular Blade!");
-                    return;
             }
         }
     }
