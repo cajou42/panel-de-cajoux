@@ -13,6 +13,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using System.Media;
+using System.Windows.Threading;
 
 namespace Pannel_de_cajoux
 {
@@ -25,6 +26,7 @@ namespace Pannel_de_cajoux
         private Graphics bases;
         private Bitmap baseImage;
         private Graphics insert;
+        private Graphics insertCusor;
         private int height = 15;
         private int cache = 6;
         private int CursorX = 5;
@@ -34,15 +36,28 @@ namespace Pannel_de_cajoux
         private int id;
         private string music;
         SoundPlayer NOST;
+        private Bitmap alu;
+        private Thread thread;
+        private MySqlCommand query2;
+        private MySqlCommand query3;
+        private MySqlCommand query4;
+
+        DispatcherTimer dispacher = new DispatcherTimer();
         public Game(int _id, string _music)
         {
             InitializeComponent();
+            dispacher.Interval = new TimeSpan(0,0,0,20);
+            dispacher.Tick += displayCursorEvent;
+            //int timerControl = 100;
             timer1.Interval = 1000;
             timer2.Interval = 2000;
             timer3.Interval = 100;
             timer1.Start();
             timer2.Start();
             timer3.Start();
+
+            dispacher.Start();
+
             id = _id;
             music = _music;
             NOST = new SoundPlayer(@"..\..\music\" + music + ".wav");
@@ -57,11 +72,18 @@ namespace Pannel_de_cajoux
             bases = Graphics.FromImage(baseImage);
             bases.FillRectangle(Brushes.LightGray, 0, 0, baseImage.Width, baseImage.Height);
             gameGrid.Image = baseImage;
+            pictureBox1.Image = resizeImage(new Bitmap(@"..\..\images\pixel_bomb.png"), new Size(50, 50));
             begin();
             generateBlock();
-            //displayCursor();
+            displayCursor();
+            thread = new Thread(displayCursor);
+            thread.Start();
+        }
 
-            Task t = Task.Run(() => { while (true) { displayCursor(); } });
+        private void displayCursorEvent(object sender, EventArgs e)
+        {
+            //gameGrid.KeyDown += Game_KeyDown;
+            generateBlock();
         }
 
         private void gameGrid_Paint(object sender, PaintEventArgs e)
@@ -105,7 +127,7 @@ namespace Pannel_de_cajoux
 
         private void timer3_Tick(object sender, EventArgs e)
         {
-            Task t = Task.Run(() => { while (true) { displayCursor(); } });
+            //baseImage = new Bitmap(alu);
             gravity();
         }
 
@@ -124,6 +146,7 @@ namespace Pannel_de_cajoux
         {
             return (new Bitmap(imgToResize, size));
         }
+
 
         public static byte[] ImageToByte(Image img)
         {
@@ -156,7 +179,6 @@ namespace Pannel_de_cajoux
 
                 }
                 height--;
-                //mount(height);
                 eraseBlock();
                 gameGrid.Image = baseImage;
             }
@@ -166,49 +188,6 @@ namespace Pannel_de_cajoux
             }
            
         }
-
-        //private void mount(int row)
-        //{
-        //    var temp = new int[12,16];
-        //    mut.WaitOne();
-        //    try
-        //    {
-        //        for (int h = 15; h > 0; h--)
-        //        {
-        //            for (int i = 0; i < 12; i++)
-        //            {
-        //                if(h == 15)
-        //                {
-        //                    if(temp[i, h] != 0)
-        //                    {
-        //                        temp[i, h] = area[i, h];
-        //                    }
-        //                    area[i, h] = 0;
-        //                }
-        //                else
-        //                {
-        //                    temp[i, h] = area[i, h];
-        //                    area[i, h] = temp[i, h - 1];
-        //                }
-
-        //            }
-        //        }
-        //        for (int h = 15; h > 0; h--)
-        //        {
-        //            for (int i = 0; i < 12; i++)
-        //            {
-        //                Bitmap image = new Bitmap(cursorDespawn(i, h));
-        //                image = resizeImage(image, new Size(25, 25));
-        //                TextureBrush tBrush = new TextureBrush(image);
-        //                insert.FillRectangle(tBrush, i * 25, row - h * 25, 25, 25);
-        //            }
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        mut.ReleaseMutex();
-        //    }
-        //}
 
         private void GameOver()
         {
@@ -314,24 +293,28 @@ namespace Pannel_de_cajoux
             {
                 CursorY = height;
             }
+            displayCursor();
         }
 
         public void displayCursor()
         {
             mut.WaitOne();
+            
             try
             {
+                alu = new Bitmap(baseImage);
+                insertCusor = Graphics.FromImage(alu);
                 var SL = cursorSpawnL();
                 Bitmap simage = new Bitmap(SL);
                 simage = resizeImage(simage, new Size(25, 25));
                 TextureBrush sBrush = new TextureBrush(simage);
-                insert.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
+                insertCusor.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
 
                 var SR = cursorSpawnR();
                 Bitmap vimage = new Bitmap(SR);
                 vimage = resizeImage(vimage, new Size(25, 25));
                 TextureBrush vBrush = new TextureBrush(vimage);
-                insert.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
+                insertCusor.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
             }
             finally
             {
@@ -344,17 +327,19 @@ namespace Pannel_de_cajoux
             mut.WaitOne();
             try
             {
+                alu = new Bitmap(baseImage);
+                insertCusor = Graphics.FromImage(alu);
                 var SL = cursorDespawn(CursorX,CursorY);
                 Bitmap simage = new Bitmap(SL);
                 simage = resizeImage(simage, new Size(25, 25));
                 TextureBrush sBrush = new TextureBrush(simage);
-                insert.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
+                insertCusor.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
 
                 var SR = cursorDespawn(CursorX + 1, CursorY);
                 Bitmap vimage = new Bitmap(SR);
                 vimage = resizeImage(vimage, new Size(25, 25));
                 TextureBrush vBrush = new TextureBrush(vimage);
-                insert.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
+                insertCusor.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
             }
             finally
             {
@@ -367,6 +352,8 @@ namespace Pannel_de_cajoux
             mut.WaitOne();
             try
             {
+                alu = new Bitmap(baseImage);
+                insertCusor = Graphics.FromImage(alu);
                 int L = blockValue(cursorDespawn(CursorX, CursorY), area[CursorX, CursorY]);
                 int R = blockValue(cursorDespawn(CursorX + 1, CursorY), area[CursorX + 1, CursorY]);
 
@@ -377,13 +364,13 @@ namespace Pannel_de_cajoux
                 Bitmap simage = new Bitmap(SL);
                 simage = resizeImage(simage, new Size(25, 25));
                 TextureBrush sBrush = new TextureBrush(simage);
-                insert.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
+                insertCusor.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
 
                 var SR = cursorSpawnR();
                 Bitmap vimage = new Bitmap(SR);
                 vimage = resizeImage(vimage, new Size(25, 25));
                 TextureBrush vBrush = new TextureBrush(vimage);
-                insert.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
+                insertCusor.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
             }
             finally
             {
@@ -592,6 +579,78 @@ namespace Pannel_de_cajoux
                     return 5;
             }
             return (0);
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            string bonus1 = String.Format("SELECT Bomb FROM bonus WHERE Id = '{0}'", id);
+            string bonus2 = String.Format("SELECT Thunder FROM bonus WHERE Id = '{0}'", id);
+            string bonus3 = String.Format("SELECT TimeStop FROM bonus WHERE Id = '{0}'", id);
+            string bonus4 = String.Format("SELECT circularBlade FROM bonus WHERE Id = '{0}'", id);
+            string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
+            MySqlConnection connection = new MySqlConnection(@connString);
+            query2 = new MySqlCommand(bonus2, connection);
+            query3 = new MySqlCommand(bonus3, connection);
+            query4 = new MySqlCommand(bonus4, connection);
+            MySqlCommand command = new MySqlCommand(bonus1, connection);
+            try
+            {
+                connection.Open();
+
+                object reader2 = query2.ExecuteScalar();
+                object reader3 = query3.ExecuteScalar();
+                object reader4 = query4.ExecuteScalar();
+
+                string bonus = "bomb";
+
+                if (Convert.ToInt32(reader2) == 1)
+                {
+                    command = new MySqlCommand(bonus2, connection);
+                    bonus = "Thunder";
+                }
+                else if (Convert.ToInt32(reader3) == 1)
+                {
+                    command = new MySqlCommand(bonus3, connection);
+                    bonus = "TimeStop";
+                }
+                else if (Convert.ToInt32(reader4) == 1)
+                {
+                    command = new MySqlCommand(bonus4, connection);
+                    bonus = "circularBlade";
+                }
+
+                Console.WriteLine("ok");
+
+                executeBonus(bonus);
+
+            }
+            catch (MySqlException f)
+            {
+                Console.WriteLine(f.Message + connString);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        private void executeBonus(string bonus)
+        {
+            switch (bonus)
+            {
+                case "bomb":
+                    Console.WriteLine("Bomb!");
+                    return;
+                case "Thunder":
+                    Console.WriteLine("Thunder!");
+                    return;
+                case "TimeStop":
+                    Console.WriteLine("Stop!");
+                    return;
+                case "circularBlade":
+                    Console.WriteLine("circular Blade!");
+                    return;
+            }
         }
     }
 }

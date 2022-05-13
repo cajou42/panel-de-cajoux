@@ -37,3 +37,4 @@ C:\Users\louis\panel-de-cajoux\Pannel_de_cajoux\Pannel_de_cajoux\obj\Debug\Panne
 C:\Users\louis\panel-de-cajoux\Pannel_de_cajoux\Pannel_de_cajoux\obj\Debug\Pannel_de_cajoux.csproj.CopyComplete
 C:\Users\louis\panel-de-cajoux\Pannel_de_cajoux\Pannel_de_cajoux\obj\Debug\Pannel_de_cajoux.Register.resources
 C:\Users\louis\panel-de-cajoux\Pannel_de_cajoux\Pannel_de_cajoux\obj\Debug\Pannel_de_cajoux.profileParameter.resources
+C:\Users\louis\panel-de-cajoux\Pannel_de_cajoux\Pannel_de_cajoux\obj\Debug\Pannel_de_cajoux.ChooseBonus.resources

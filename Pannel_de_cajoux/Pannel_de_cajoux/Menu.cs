@@ -67,5 +67,12 @@ namespace Pannel_de_cajoux
             obj.Show();
             this.Hide();
         }
+
+        private void ChooseBonus_Click(object sender, EventArgs e)
+        {
+            ChooseBonus obj = new ChooseBonus(id);
+            obj.Show();
+            this.Hide();
+        }
     }
 }
