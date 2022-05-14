@@ -13,6 +13,7 @@ namespace Pannel_de_cajoux
 {
     public partial class Register : Form
     {
+        private MySqlCommand req;
         public Register()
         {
             InitializeComponent();
@@ -23,13 +24,22 @@ namespace Pannel_de_cajoux
             string user = textBox1.Text;
             string password = textBox2.Text;
             string email = textBox3.Text;
+            string verif = String.Format("SELECT Id FROM user WHERE Name = '{0}'", user);
             string query = String.Format("INSERT INTO user (Name, Password, Email) VALUES ('{0}', '{1}', '{2}')", user, password, email);
             string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
             MySqlConnection connection = new MySqlConnection(@connString);
+            req = new MySqlCommand(verif, connection);
             MySqlCommand command = new MySqlCommand(query, connection);
             try
             {
                 connection.Open();
+
+                command.ExecuteNonQuery();
+
+                object reader = req.ExecuteScalar();
+                var temp = Convert.ToInt32(reader);
+                string test = String.Format("INSERT INTO bonus (Id, Bomb) VALUES ('{0}', '{1}')", temp, 1);
+                command = new MySqlCommand(test, connection);
 
                 command.ExecuteNonQuery();
 

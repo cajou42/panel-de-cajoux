@@ -14,7 +14,6 @@ namespace Pannel_de_cajoux
     public partial class ChooseBonus : Form
     {
         int id;
-        private MySqlCommand query;
         public ChooseBonus(int _id)
         {
             InitializeComponent();
@@ -37,23 +36,13 @@ namespace Pannel_de_cajoux
 
         private void button1_Click(object sender, EventArgs e)
         {   
-            string verif = String.Format("SELECT * FROM bonus WHERE Id = '{0}'", id);
-            string test = String.Format("INSERT INTO bonus (Id, Bomb) VALUES ('{0}', '{1}')", id, 1);
-            string test2 = String.Format("UPDATE bonus SET Bomb = 1, Thunder = 0, TimeStop = 0, circularBlade = 0 WHERE Id = '{0}'", id);
+            string test = String.Format("UPDATE bonus SET Bomb = 1, Thunder = 0, TimeStop = 0, circularBlade = 0 WHERE Id = '{0}'", id);
             string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
             MySqlConnection connection = new MySqlConnection(@connString);
-            query = new MySqlCommand(verif, connection);
             MySqlCommand command = new MySqlCommand(test, connection);
             try
             {
                 connection.Open();
-
-                object reader = query.ExecuteScalar();
-
-                if (Convert.ToInt32(reader) == id)
-                {
-                    command = new MySqlCommand(test2, connection);
-                }
 
                 command.ExecuteNonQuery();
 
@@ -76,23 +65,13 @@ namespace Pannel_de_cajoux
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string verif = String.Format("SELECT * FROM bonus WHERE Id = '{0}'", id);
-            string test = String.Format("INSERT INTO bonus (Id, Thunder) VALUES ('{0}', '{1}')", id, 1);
-            string test2 = String.Format("UPDATE bonus SET Bomb = 0, Thunder = 1, TimeStop = 0, circularBlade = 0 WHERE Id = '{0}'", id);
+            string test = String.Format("UPDATE bonus SET Bomb = 0, Thunder = 1, TimeStop = 0, circularBlade = 0 WHERE Id = '{0}'", id);
             string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
             MySqlConnection connection = new MySqlConnection(@connString);
-            query = new MySqlCommand(verif, connection);
             MySqlCommand command = new MySqlCommand(test, connection);
             try
             {
                 connection.Open();
-
-                object reader = query.ExecuteScalar();
-
-                if (Convert.ToInt32(reader) == id)
-                {
-                    command = new MySqlCommand(test2, connection);
-                }
 
                 command.ExecuteNonQuery();
 
@@ -115,23 +94,13 @@ namespace Pannel_de_cajoux
 
         private void button3_Click(object sender, EventArgs e)
         {
-            string verif = String.Format("SELECT * FROM bonus WHERE Id = '{0}'", id);
-            string test = String.Format("INSERT INTO bonus (Id, TimeStop) VALUES ('{0}', '{1}')", id, 1);
-            string test2 = String.Format("UPDATE bonus SET Bomb = 0, Thunder = 0, TimeStop = 1, circularBlade = 0 WHERE Id = '{0}'", id);
+            string test = String.Format("UPDATE bonus SET Bomb = 0, Thunder = 0, TimeStop = 1, circularBlade = 0 WHERE Id = '{0}'", id);
             string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
             MySqlConnection connection = new MySqlConnection(@connString);
-            query = new MySqlCommand(verif, connection);
             MySqlCommand command = new MySqlCommand(test, connection);
             try
             {
                 connection.Open();
-
-                object reader = query.ExecuteScalar();
-
-                if (Convert.ToInt32(reader) == id)
-                {
-                    command = new MySqlCommand(test2, connection);
-                }
 
                 command.ExecuteNonQuery();
 
@@ -154,23 +123,13 @@ namespace Pannel_de_cajoux
 
         private void button4_Click(object sender, EventArgs e)
         {
-            string verif = String.Format("SELECT * FROM bonus WHERE Id = '{0}'", id);
-            string test = String.Format("INSERT INTO bonus (Id, circularBlade) VALUES ('{0}', '{1}')", id, 1);
-            string test2 = String.Format("UPDATE bonus SET Bomb = 0, Thunder = 0, TimeStop = 0, circularBlade = 1 WHERE Id = '{0}'", id);
+            string test = String.Format("UPDATE bonus SET Bomb = 0, Thunder = 0, TimeStop = 0, circularBlade = 1 WHERE Id = '{0}'", id);
             string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
             MySqlConnection connection = new MySqlConnection(@connString);
-            query = new MySqlCommand(verif, connection);
             MySqlCommand command = new MySqlCommand(test, connection);
             try
             {
                 connection.Open();
-
-                object reader = query.ExecuteScalar();
-
-                if (Convert.ToInt32(reader) == id)
-                {
-                    command = new MySqlCommand(test2, connection);
-                }
 
                 command.ExecuteNonQuery();
 

@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using System.Media;
 using System.Windows.Threading;
+using System.Runtime.InteropServices;
 
 namespace Pannel_de_cajoux
 {
@@ -37,28 +37,24 @@ namespace Pannel_de_cajoux
         private string music;
         SoundPlayer NOST;
         private Bitmap alu;
-        private Thread thread;
         private MySqlCommand query2;
         private MySqlCommand query3;
         private MySqlCommand query4;
+        private MySqlCommand query5;
+        private string control;
         private string bonus;
         private int cooldown;
+        private Task task;
+        private int baseSpeed = 2000;
+        private bool gameOn = true;
+        private bool playing = true;
 
-        DispatcherTimer dispacher = new DispatcherTimer();
         public Game(int _id, string _music)
         {
             InitializeComponent();
-            dispacher.Interval = new TimeSpan(0,0,0,20);
-            dispacher.Tick += displayCursorEvent;
             //int timerControl = 100;
             timer1.Interval = 1000;
-            timer2.Interval = 2000;
-            timer3.Interval = 100;
             timer1.Start();
-            timer2.Start();
-            timer3.Start();
-
-            dispacher.Start();
 
             id = _id;
             music = _music;
@@ -75,18 +71,8 @@ namespace Pannel_de_cajoux
             bases.FillRectangle(Brushes.LightGray, 0, 0, baseImage.Width, baseImage.Height);
             gameGrid.Image = baseImage;
             begin();
-            generateBlock();
+            task = Task.Run(() => generateBlock());
             displayCursor();
-            thread = new Thread(displayCursor);
-            thread.Start();
-        }
-
-
-
-        private void displayCursorEvent(object sender, EventArgs e)
-        {
-            //gameGrid.KeyDown += Game_KeyDown;
-            generateBlock();
         }
 
         private void gameGrid_Paint(object sender, PaintEventArgs e)
@@ -128,17 +114,6 @@ namespace Pannel_de_cajoux
             }
         }
 
-        private void timer3_Tick(object sender, EventArgs e)
-        {
-            //baseImage = new Bitmap(alu);
-            gravity();
-        }
-
-        private void timer2_Tick(object sender, EventArgs e)
-        {
-            generateBlock();
-        }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             tick++;
@@ -159,46 +134,54 @@ namespace Pannel_de_cajoux
             return (new Bitmap(imgToResize, size));
         }
 
-
-        public static byte[] ImageToByte(Image img)
+        private Task generateBlock()
         {
-            ImageConverter converter = new ImageConverter();
-            return (byte[])converter.ConvertTo(img, typeof(byte[]));
-        }
-
-        private void generateBlock()
-        {
-            mut.WaitOne();
-            try 
+            while (gameOn)
             {
-                insert = Graphics.FromImage(baseImage);
-                for (int i = 0; i < 12; i++)
+                mut.WaitOne();
+                try
                 {
-                    string color = ramdomBlock();
-                    Bitmap image = new Bitmap(color);
-                    image = resizeImage(image, new Size(25, 25));
-                    TextureBrush tBrush = new TextureBrush(image);
-                    insert.FillRectangle(tBrush, i * 25, height * 25, 25, 25);
-                    if (height != 0)
+                    if (!playing)
                     {
-                        area[i, height] = blockValue(color, i);
+                        playing = true;
+                        NOST.Play();
+                        NOST.PlayLooping();
                     }
-                    else
+                    insert = Graphics.FromImage(baseImage);
+                    for (int i = 0; i < 12; i++)
                     {
-                        GameOver();
-                        return;
-                    }
+                        string color = ramdomBlock();
+                        Bitmap image = new Bitmap(color);
+                        image = resizeImage(image, new Size(25, 25));
+                        TextureBrush tBrush = new TextureBrush(image);
+                        insert.FillRectangle(tBrush, i * 25, height * 25, 25, 25);
+                        if (height != 0)
+                        {
+                            area[i, height] = blockValue(color, i);
+                        }
+                        else
+                        {
+                            GameOver();
+                            mut.ReleaseMutex();
+                            break;
+                        }
 
+                    }
+                    height--;
+                    eraseBlock();
+                    gravity();
+                    gameGrid.Image = baseImage;
                 }
-                height--;
-                eraseBlock();
-                gameGrid.Image = baseImage;
+                catch(Exception e)
+                {
+                }
+                finally
+                {
+                    mut.ReleaseMutex();
+                }
+                Thread.Sleep(baseSpeed);
             }
-            finally
-            {
-                mut.ReleaseMutex();
-            }
-           
+            return Task.FromResult<object>(null);
         }
 
         private void GameOver()
@@ -206,7 +189,6 @@ namespace Pannel_de_cajoux
             if(height == 0)
             {
                 timer1.Stop();
-                timer2.Stop();
                 NOST.Stop();
                 string query = String.Format("INSERT INTO highScore (UserId, score) VALUES ('{0}', '{1}')", id, score);
                 string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
@@ -222,7 +204,10 @@ namespace Pannel_de_cajoux
 
                     Connexion obj = new Connexion();
                     obj.Show();
-                    this.Hide();
+                    this.BeginInvoke(new MethodInvoker(delegate
+                    {
+                        this.Hide();
+                    }));
 
                 }
                 catch (MySqlException f)
@@ -257,19 +242,19 @@ namespace Pannel_de_cajoux
         {
             int vertical = 0;
             int horizontal = 0;
-            if (e.KeyCode == Keys.Q)
+            if ((e.KeyCode == Keys.Q && control == "A") || (e.KeyCode == Keys.Left && control == "B"))
             {
                 horizontal--;
             }
-            else if (e.KeyCode == Keys.D)
+            else if ((e.KeyCode == Keys.D && control == "A") || (e.KeyCode == Keys.Right && control == "B"))
             {
                 horizontal++;
             }
-            else if (e.KeyCode == Keys.S)
+            else if ((e.KeyCode == Keys.S && control == "A") || (e.KeyCode == Keys.Down && control == "B"))
             {
                 vertical++;
             }
-            else if (e.KeyCode == Keys.Z)
+            else if ((e.KeyCode == Keys.Z && control == "A") || (e.KeyCode == Keys.Up && control == "B"))
             {
                 vertical--;
             }
@@ -282,6 +267,10 @@ namespace Pannel_de_cajoux
                 Console.WriteLine(bonus);
                 executeBonus(bonus);
             }
+            else if(e.KeyCode == Keys.P)
+            {
+                pause();
+            }
             else
             {
                 return;
@@ -291,77 +280,71 @@ namespace Pannel_de_cajoux
 
         private void moveCursor(int X, int Y)
         {
-            eraseCursor();
-            CursorX += X;
-            CursorY += Y;
-            if(CursorX < 0)
+            mut.WaitOne();
+            try
             {
-                CursorX = 0;
+                eraseCursor();
+                CursorX += X;
+                CursorY += Y;
+                if (CursorX < 0)
+                {
+                    CursorX = 0;
+                }
+                if (CursorY < 0)
+                {
+                    CursorY = 0;
+                }
+                if (CursorX > 12)
+                {
+                    CursorX = 12;
+                }
+                if (CursorY < height)
+                {
+                    CursorY = height;
+                }
+                displayCursor();
+                gameGrid.Update();
             }
-            if (CursorY < 0)
+            finally
             {
-                CursorY = 0;
+                mut.ReleaseMutex();
             }
-            if (CursorX > 12)
-            {
-                CursorX = 12;
-            }
-            if (CursorY < height)
-            {
-                CursorY = height;
-            }
-            displayCursor();
+
         }
 
         public void displayCursor()
         {
-            mut.WaitOne();
-            
-            try
-            {
-                alu = new Bitmap(baseImage);
-                insertCusor = Graphics.FromImage(alu);
-                var SL = cursorSpawnL();
-                Bitmap simage = new Bitmap(SL);
-                simage = resizeImage(simage, new Size(25, 25));
-                TextureBrush sBrush = new TextureBrush(simage);
-                insertCusor.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
 
-                var SR = cursorSpawnR();
-                Bitmap vimage = new Bitmap(SR);
-                vimage = resizeImage(vimage, new Size(25, 25));
-                TextureBrush vBrush = new TextureBrush(vimage);
-                insertCusor.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
-            }
-            finally
-            {
-                mut.ReleaseMutex();
-            }
+            alu = new Bitmap(baseImage);
+            insertCusor = Graphics.FromImage(alu);
+            var SL = cursorSpawnL();
+            Bitmap simage = new Bitmap(SL);
+            simage = resizeImage(simage, new Size(25, 25));
+            TextureBrush sBrush = new TextureBrush(simage);
+            insertCusor.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
+
+            var SR = cursorSpawnR();
+            Bitmap vimage = new Bitmap(SR);
+            vimage = resizeImage(vimage, new Size(25, 25));
+            TextureBrush vBrush = new TextureBrush(vimage);
+            insertCusor.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
         }
 
         public void eraseCursor()
         {
-            mut.WaitOne();
-            try
-            {
-                alu = new Bitmap(baseImage);
-                insertCusor = Graphics.FromImage(alu);
-                var SL = cursorDespawn(CursorX,CursorY);
-                Bitmap simage = new Bitmap(SL);
-                simage = resizeImage(simage, new Size(25, 25));
-                TextureBrush sBrush = new TextureBrush(simage);
-                insertCusor.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
+            alu = new Bitmap(baseImage);
+            insertCusor = Graphics.FromImage(alu);
+            var SL = cursorDespawn(CursorX,CursorY);
+            Bitmap simage = new Bitmap(SL);
+            simage = resizeImage(simage, new Size(25, 25));
+            TextureBrush sBrush = new TextureBrush(simage);
+            insertCusor.FillRectangle(sBrush, CursorX * 25, CursorY * 25, 25, 25);
 
-                var SR = cursorDespawn(CursorX + 1, CursorY);
-                Bitmap vimage = new Bitmap(SR);
-                vimage = resizeImage(vimage, new Size(25, 25));
-                TextureBrush vBrush = new TextureBrush(vimage);
-                insertCusor.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
-            }
-            finally
-            {
-                mut.ReleaseMutex();
-            }
+            var SR = cursorDespawn(CursorX + 1, CursorY);
+            Bitmap vimage = new Bitmap(SR);
+            vimage = resizeImage(vimage, new Size(25, 25));
+            TextureBrush vBrush = new TextureBrush(vimage);
+            insertCusor.FillRectangle(vBrush, (CursorX + 1) * 25, CursorY * 25, 25, 25);
         }
 
         private void exchange()
@@ -420,8 +403,11 @@ namespace Pannel_de_cajoux
                             area[j, h] = 0;
                             area[u, h] = 0;
                             score++;
-                            scoreLabel.Text = "score : " + score;
-                            timer2.Interval += 10;
+                            baseSpeed -= 10;
+                            this.BeginInvoke(new MethodInvoker(delegate
+                            {
+                                scoreLabel.Text = "score : " + score;
+                            }));
                         }
                         if (f < 16 && y < 16 && area[i, h] != 0 && area[i, h] == area[i, f] && area[i, h] == area[i, y])
                         {
@@ -432,8 +418,11 @@ namespace Pannel_de_cajoux
                             area[i, f] = 0;
                             area[i, y] = 0;
                             score++;
-                            scoreLabel.Text = "score : " + score;
-                            timer2.Interval += 10;
+                            baseSpeed -= 10;
+                            this.BeginInvoke(new MethodInvoker(delegate
+                            {
+                                scoreLabel.Text = "score : " + score;
+                            }));
                         }
                     }
                 }
@@ -492,6 +481,53 @@ namespace Pannel_de_cajoux
             finally
             {
                 mut.ReleaseMutex();
+            }
+        }
+
+        private void pause()
+        {
+            NOST.Stop();
+            timer1.Stop();
+            gameOn = false;
+            var result = MessageBox.Show("Want to resume ?", "Pause", MessageBoxButtons.YesNo);
+            if (result == DialogResult.Yes)
+            {
+                NOST.Play();
+                timer1.Start();
+                gameOn = true;
+                task = Task.Run(() => generateBlock());
+                Console.WriteLine(gameOn);
+            }
+            else
+            {
+                string query = String.Format("INSERT INTO highScore (UserId, score, has_quit) VALUES ('{0}', '{1}', '{2}')", id, score, 1);
+                string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
+                MySqlConnection connection = new MySqlConnection(@connString);
+                MySqlCommand command = new MySqlCommand(query, connection);
+                try
+                {
+                    connection.Open();
+
+                    command.ExecuteNonQuery();
+
+                    Console.WriteLine("ok");
+
+                    Menu obj = new Menu(id,music);
+                    obj.Show();
+                    this.BeginInvoke(new MethodInvoker(delegate
+                    {
+                        this.Hide();
+                    }));
+
+                }
+                catch (MySqlException f)
+                {
+                    Console.WriteLine(f.Message + connString);
+                }
+                finally
+                {
+                    connection.Close();
+                }
             }
         }
 
@@ -624,6 +660,10 @@ namespace Pannel_de_cajoux
                             area[CursorX, CursorY - 1] = 0;
                             score += 2;
                             scoreLabel.Text = "score : " + score;
+                            SoundPlayer boum = new SoundPlayer(@"..\..\music\explosion.wav");
+                            NOST.Stop();
+                            boum.Play();
+                            playing = false;
                             cooldown = 60;
                             return;
                         case "Thunder":
@@ -639,11 +679,14 @@ namespace Pannel_de_cajoux
                                     }
                                 }
                             }
+                            NOST.Stop();
+                            SoundPlayer zap = new SoundPlayer(@"..\..\music\thunder.wav");
+                            zap.Play();
+                            playing = false;
                             cooldown = 60;
                             return;
                         case "TimeStop":
                             Console.WriteLine("Stop!");
-                            timer2.Stop();
                             var pause = new Stopwatch();
                             pause.Start();
                             while (pause.ElapsedMilliseconds != 10000)
@@ -651,7 +694,6 @@ namespace Pannel_de_cajoux
                                 continue;
                             }
                             pause.Stop();
-                            timer2.Start();
                             cooldown = 70;
                             Console.WriteLine("finished!");
                             return;
@@ -666,6 +708,10 @@ namespace Pannel_de_cajoux
                             }
                             score += 3;
                             scoreLabel.Text = "score : " + score;
+                            SoundPlayer zing = new SoundPlayer(@"..\..\music\circular_blade.wav");
+                            NOST.Stop();
+                            zing.Play();
+                            playing = false;
                             cooldown = 70;
                             return;
                     }
@@ -684,11 +730,13 @@ namespace Pannel_de_cajoux
             string bonus2 = String.Format("SELECT Thunder FROM bonus WHERE Id = '{0}'", id);
             string bonus3 = String.Format("SELECT TimeStop FROM bonus WHERE Id = '{0}'", id);
             string bonus4 = String.Format("SELECT circularBlade FROM bonus WHERE Id = '{0}'", id);
+            string queryControl = String.Format("SELECT ControlType FROM user WHERE Id = '{0}'", id);
             string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
             MySqlConnection connection = new MySqlConnection(@connString);
             query2 = new MySqlCommand(bonus2, connection);
             query3 = new MySqlCommand(bonus3, connection);
             query4 = new MySqlCommand(bonus4, connection);
+            query5 = new MySqlCommand(queryControl, connection);
             MySqlCommand command = new MySqlCommand(bonus1, connection);
             try
             {
@@ -697,6 +745,7 @@ namespace Pannel_de_cajoux
                 object reader2 = query2.ExecuteScalar();
                 object reader3 = query3.ExecuteScalar();
                 object reader4 = query4.ExecuteScalar();
+                control = Convert.ToString(query5.ExecuteScalar());
 
                 bonus = "bomb";
                 pictureBox1.Image = resizeImage(new Bitmap(@"..\..\images\pixel_bomb.png"), new Size(50, 50));
@@ -719,7 +768,7 @@ namespace Pannel_de_cajoux
                 {
                     command = new MySqlCommand(bonus4, connection);
                     bonus = "circularBlade";
-                    pictureBox1.Image = resizeImage(new Bitmap(@"..\..\images\circular_blade.png"), new Size(50, 50));
+                    pictureBox1.Image = resizeImage(new Bitmap(@"..\..\images\pixel_circular_blade.png"), new Size(50, 50));
 
                 }
                 Console.WriteLine("ok");

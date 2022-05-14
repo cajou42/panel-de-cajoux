@@ -34,8 +34,6 @@ namespace Pannel_de_cajoux
             this.scoreLabel = new System.Windows.Forms.Label();
             this.timerLabel = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.timer2 = new System.Windows.Forms.Timer(this.components);
-            this.timer3 = new System.Windows.Forms.Timer(this.components);
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.labelBonus = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.gameGrid)).BeginInit();
@@ -73,14 +71,6 @@ namespace Pannel_de_cajoux
             // timer1
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // timer2
-            // 
-            this.timer2.Tick += new System.EventHandler(this.timer2_Tick);
-            // 
-            // timer3
-            // 
-            this.timer3.Tick += new System.EventHandler(this.timer3_Tick);
             // 
             // pictureBox1
             // 
@@ -126,8 +116,6 @@ namespace Pannel_de_cajoux
         private System.Windows.Forms.Label scoreLabel;
         private System.Windows.Forms.Label timerLabel;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.Timer timer2;
-        private System.Windows.Forms.Timer timer3;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.Label labelBonus;
     }

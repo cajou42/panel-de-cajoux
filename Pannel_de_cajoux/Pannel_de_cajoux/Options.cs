@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MySql.Data.MySqlClient;
 
 namespace Pannel_de_cajoux
 {
@@ -17,6 +18,7 @@ namespace Pannel_de_cajoux
         public int click;
         public string music = "Tetris_theme";
         public int id;
+        public string[] tabControl;
         [DllImport("winmm.dll")]
         public static extern int waveOutGetVolume(IntPtr hwo, out uint dwVolume);
 
@@ -33,7 +35,9 @@ namespace Pannel_de_cajoux
             trackBar1.Value = CalcVol / (ushort.MaxValue / 10);
             music = _music;
             id = _id;
+            KeyPreview = true;
         }
+
 
         private void trackBar1_Scroll(object sender, EventArgs e)
         {
@@ -76,6 +80,56 @@ namespace Pannel_de_cajoux
             Menu obj = new Menu(id, music);
             obj.Show();
             this.Hide();
+        }
+
+        private void buttonB_Click(object sender, EventArgs e)
+        {
+            string query = String.Format("UPDATE user SET ControlType = 'B' WHERE Id = '{0}'", id);
+            string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
+            MySqlConnection connection = new MySqlConnection(@connString);
+            MySqlCommand command = new MySqlCommand(query, connection);
+            try
+            {
+                connection.Open();
+
+                command.ExecuteNonQuery();
+
+                Console.WriteLine("ok");
+
+            }
+            catch (MySqlException f)
+            {
+                Console.WriteLine(f.Message + connString);
+            }
+            finally
+            {
+                connection.Close();
+            }
+        }
+
+        private void buttonA_Click(object sender, EventArgs e)
+        {
+            string query = String.Format("UPDATE user SET ControlType = 'A' WHERE Id = '{0}'", id);
+            string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
+            MySqlConnection connection = new MySqlConnection(@connString);
+            MySqlCommand command = new MySqlCommand(query, connection);
+            try
+            {
+                connection.Open();
+
+                command.ExecuteNonQuery();
+
+                Console.WriteLine("ok");
+
+            }
+            catch (MySqlException f)
+            {
+                Console.WriteLine(f.Message + connString);
+            }
+            finally
+            {
+                connection.Close();
+            }
         }
     }
 }

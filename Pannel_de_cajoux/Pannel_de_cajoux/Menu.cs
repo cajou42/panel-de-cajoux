@@ -14,6 +14,7 @@ namespace Pannel_de_cajoux
     {
         public int id;
         public string music;
+        public string[] tab = new string[] { "Z", "S", "Q", "D", "SPACE", "P", "E" };
         public Menu(int ids, string _music = "Tetris_theme")
         {
             InitializeComponent();
