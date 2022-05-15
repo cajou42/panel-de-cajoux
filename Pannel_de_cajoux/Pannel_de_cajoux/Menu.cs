@@ -14,24 +14,40 @@ namespace Pannel_de_cajoux
     {
         public int id;
         public string music;
-        public string[] tab = new string[] { "Z", "S", "Q", "D", "SPACE", "P", "E" };
-        public Menu(int ids, string _music = "Tetris_theme")
+        public int background;
+        public Menu(int ids, int _background = 1, string _music = "Tetris_theme")
         {
             InitializeComponent();
             id = ids;
             music = _music;
+            background = _background;
+            switch (background)
+            {
+                case 1:
+                    this.BackgroundImage = Properties.Resources.bacground;
+                    this.BackgroundImageLayout = ImageLayout.Stretch;
+                    break;
+                case 2:
+                    this.BackgroundImage = Properties.Resources.background2;
+                    this.BackgroundImageLayout = ImageLayout.Stretch;
+                    break;
+                case 3:
+                    this.BackgroundImage = Properties.Resources.background3;
+                    this.BackgroundImageLayout = ImageLayout.Stretch;
+                    break;
+            }
         }
 
         private void playButton_Click(object sender, EventArgs e)
         {
-            Game obj = new Game(id,music);
+            Game obj = new Game(id,music, background);
             obj.Show();
             this.Hide();
         }
 
         private void optionButton_Click(object sender, EventArgs e)
         {
-            Options obj = new Options(id, music);
+            Options obj = new Options(id, music, background);
             obj.Show();
             this.Hide();
         }

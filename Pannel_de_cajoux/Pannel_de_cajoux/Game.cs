@@ -48,8 +48,9 @@ namespace Pannel_de_cajoux
         private int baseSpeed = 2000;
         private bool gameOn = true;
         private bool playing = true;
+        private int background;
 
-        public Game(int _id, string _music)
+        public Game(int _id, string _music, int _background)
         {
             InitializeComponent();
             //int timerControl = 100;
@@ -58,6 +59,24 @@ namespace Pannel_de_cajoux
 
             id = _id;
             music = _music;
+            background = _background;
+
+            switch (background)
+            {
+                case 1:
+                    this.BackgroundImage = Properties.Resources.bacground;
+                    this.BackgroundImageLayout = ImageLayout.Stretch;
+                    break;
+                case 2:
+                    this.BackgroundImage = Properties.Resources.background2;
+                    this.BackgroundImageLayout = ImageLayout.Stretch;
+                    break;
+                case 3:
+                    this.BackgroundImage = Properties.Resources.background3;
+                    this.BackgroundImageLayout = ImageLayout.Stretch;
+                    break;
+            }
+
             NOST = new SoundPlayer(@"..\..\music\" + music + ".wav");
             NOST.Play();
             NOST.PlayLooping();
@@ -496,7 +515,6 @@ namespace Pannel_de_cajoux
                 timer1.Start();
                 gameOn = true;
                 task = Task.Run(() => generateBlock());
-                Console.WriteLine(gameOn);
             }
             else
             {
@@ -512,7 +530,7 @@ namespace Pannel_de_cajoux
 
                     Console.WriteLine("ok");
 
-                    Menu obj = new Menu(id,music);
+                    Menu obj = new Menu(id,background,music);
                     obj.Show();
                     this.BeginInvoke(new MethodInvoker(delegate
                     {
@@ -668,11 +686,12 @@ namespace Pannel_de_cajoux
                             return;
                         case "Thunder":
                             Console.WriteLine("Thunder!");
+                            var value = area[CursorX, CursorY];
                             for (int h = 0; h < 16; h++)
                             {
                                 for (int i = 0; i < 12; i++)
                                 {
-                                    if (area[i, h] == area[CursorX, CursorY])
+                                    if (area[i, h] == value)
                                     {
                                         insert.FillRectangle(tBrush, i * 25, h * 25, 25, 25);
                                         area[i, h] = 0;
@@ -691,10 +710,13 @@ namespace Pannel_de_cajoux
                             pause.Start();
                             while (pause.ElapsedMilliseconds != 10000)
                             {
+                                gameOn = false;
                                 continue;
                             }
                             pause.Stop();
-                            cooldown = 70;
+                            gameOn = true;
+                            task = Task.Run(() => generateBlock());
+                            cooldown = 30;
                             Console.WriteLine("finished!");
                             return;
                         case "circularBlade":

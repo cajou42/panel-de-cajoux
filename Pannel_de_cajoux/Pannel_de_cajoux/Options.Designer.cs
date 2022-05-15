@@ -38,6 +38,8 @@ namespace Pannel_de_cajoux
             this.label3 = new System.Windows.Forms.Label();
             this.buttonA = new System.Windows.Forms.Button();
             this.buttonB = new System.Windows.Forms.Button();
+            this.buttonBacground = new System.Windows.Forms.Button();
+            this.labelBackground = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -52,7 +54,7 @@ namespace Pannel_de_cajoux
             // 
             // trackBar1
             // 
-            this.trackBar1.Location = new System.Drawing.Point(283, 53);
+            this.trackBar1.Location = new System.Drawing.Point(534, 53);
             this.trackBar1.Name = "trackBar1";
             this.trackBar1.Size = new System.Drawing.Size(188, 56);
             this.trackBar1.TabIndex = 12;
@@ -61,7 +63,7 @@ namespace Pannel_de_cajoux
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(341, 25);
+            this.label1.Location = new System.Drawing.Point(592, 25);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(53, 17);
             this.label1.TabIndex = 11;
@@ -99,7 +101,7 @@ namespace Pannel_de_cajoux
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(28, 262);
+            this.label3.Location = new System.Drawing.Point(95, 228);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(99, 17);
             this.label3.TabIndex = 21;
@@ -107,7 +109,7 @@ namespace Pannel_de_cajoux
             // 
             // buttonA
             // 
-            this.buttonA.Location = new System.Drawing.Point(31, 303);
+            this.buttonA.Location = new System.Drawing.Point(98, 269);
             this.buttonA.Name = "buttonA";
             this.buttonA.Size = new System.Drawing.Size(75, 31);
             this.buttonA.TabIndex = 29;
@@ -117,7 +119,7 @@ namespace Pannel_de_cajoux
             // 
             // buttonB
             // 
-            this.buttonB.Location = new System.Drawing.Point(31, 356);
+            this.buttonB.Location = new System.Drawing.Point(98, 322);
             this.buttonB.Name = "buttonB";
             this.buttonB.Size = new System.Drawing.Size(75, 31);
             this.buttonB.TabIndex = 30;
@@ -125,11 +127,32 @@ namespace Pannel_de_cajoux
             this.buttonB.UseVisualStyleBackColor = true;
             this.buttonB.Click += new System.EventHandler(this.buttonB_Click);
             // 
+            // buttonBacground
+            // 
+            this.buttonBacground.Location = new System.Drawing.Point(534, 303);
+            this.buttonBacground.Name = "buttonBacground";
+            this.buttonBacground.Size = new System.Drawing.Size(147, 31);
+            this.buttonBacground.TabIndex = 31;
+            this.buttonBacground.Text = "change background";
+            this.buttonBacground.UseVisualStyleBackColor = true;
+            this.buttonBacground.Click += new System.EventHandler(this.buttonBacground_Click);
+            // 
+            // labelBackground
+            // 
+            this.labelBackground.AutoSize = true;
+            this.labelBackground.Location = new System.Drawing.Point(547, 262);
+            this.labelBackground.Name = "labelBackground";
+            this.labelBackground.Size = new System.Drawing.Size(134, 17);
+            this.labelBackground.TabIndex = 32;
+            this.labelBackground.Text = "background type : 1";
+            // 
             // Options
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.labelBackground);
+            this.Controls.Add(this.buttonBacground);
             this.Controls.Add(this.buttonB);
             this.Controls.Add(this.buttonA);
             this.Controls.Add(this.label3);
@@ -158,5 +181,7 @@ namespace Pannel_de_cajoux
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button buttonA;
         private System.Windows.Forms.Button buttonB;
+        private System.Windows.Forms.Button buttonBacground;
+        private System.Windows.Forms.Label labelBackground;
     }
 }

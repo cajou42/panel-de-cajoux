@@ -14,17 +14,20 @@ namespace Pannel_de_cajoux
 {
     public partial class Options : Form
     {
-        private string[] tab = new string[] { "Tetris_theme", "Oceanic Breeze", "magical-girl", "hades-house-of-hades", "scattered-and-lost" };
+        private string[] tab = new string[] { "Tetris_theme", "Oceanic Breeze", "magical-girl", "hades-house-of-hades", "scattered-and-lost", "world-map", "BATTLEFIELD (VER. 2)" };
         public int click;
+        public int click2 = 1;
         public string music = "Tetris_theme";
         public int id;
         public string[] tabControl;
+        public int background;
+
         [DllImport("winmm.dll")]
         public static extern int waveOutGetVolume(IntPtr hwo, out uint dwVolume);
 
         [DllImport("winmm.dll")]
         public static extern int waveOutSetVolume(IntPtr hwo, uint dwVolume);
-        public Options(int _id, string _music)
+        public Options(int _id, string _music, int _background)
         {
             InitializeComponent();
             info.Text = tab[0];
@@ -35,7 +38,7 @@ namespace Pannel_de_cajoux
             trackBar1.Value = CalcVol / (ushort.MaxValue / 10);
             music = _music;
             id = _id;
-            KeyPreview = true;
+            background = _background;
         }
 
 
@@ -72,12 +75,18 @@ namespace Pannel_de_cajoux
                 case 4:
                     label2.Text = "composer : Lena Raine \n from : celeste";
                     break;
+                case 5:
+                    label2.Text = "composer : Hirokazu Ando and Jun Ishikawa \n from : Kirby: Planet Robobot";
+                    break;
+                case 6:
+                    label2.Text = "composer : Hinchy \n Arrangement: KnightOfGames \n Performance: wolfman1405(Guitar) \n from : SiIvaGunner : King for Another Day";
+                    break;
             }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Menu obj = new Menu(id, music);
+            Menu obj = new Menu(id, background, music);
             obj.Show();
             this.Hide();
         }
@@ -130,6 +139,17 @@ namespace Pannel_de_cajoux
             {
                 connection.Close();
             }
+        }
+
+        private void buttonBacground_Click(object sender, EventArgs e)
+        {
+            click2++;
+            if (click2 == 4)
+            {
+                click2 = 1;
+            }
+            labelBackground.Text = "background type : " + click2;
+            background = click2;
         }
     }
 }
