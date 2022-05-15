@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,16 +17,19 @@ namespace Pannel_de_cajoux
     {
         private MySqlCommand query;
         private MySqlCommand query2;
+        private HashAlgorithm sha = SHA256.Create();
         public Connexion()
         {
             InitializeComponent();
+            textBox2.PasswordChar = '*';
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             string user = textBox1.Text;
-            string password = textBox2.Text;
-            string test = String.Format("SELECT COUNT(*) FROM `user` Where Name = '{0}' and Password = '{1}'", user, password);
+            byte[] bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(textBox2.Text));
+            var hashPassword = System.Text.Encoding.Default.GetString(bytes);
+            string test = String.Format("SELECT COUNT(*) FROM `user` Where Name = '{0}' and Password = '{1}'", user, hashPassword);
             string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
             MySqlConnection connection = new MySqlConnection(@connString);
             query = new MySqlCommand(test, connection);

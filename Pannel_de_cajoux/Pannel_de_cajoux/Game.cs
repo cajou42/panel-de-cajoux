@@ -49,6 +49,8 @@ namespace Pannel_de_cajoux
         private bool gameOn = true;
         private bool playing = true;
         private int background;
+        private bool generate = true;
+        private Stopwatch stop;
 
         public Game(int _id, string _music, int _background)
         {
@@ -123,7 +125,6 @@ namespace Pannel_de_cajoux
                         TextureBrush tBrush = new TextureBrush(image);
                         insert.FillRectangle(tBrush, i * 25, j * 25, 25, 25);
                         area[i, j] = 0;
-              
                     }
                 }
             }
@@ -167,29 +168,34 @@ namespace Pannel_de_cajoux
                         NOST.PlayLooping();
                     }
                     insert = Graphics.FromImage(baseImage);
-                    for (int i = 0; i < 12; i++)
+                    if (generate)
                     {
-                        string color = ramdomBlock();
-                        Bitmap image = new Bitmap(color);
-                        image = resizeImage(image, new Size(25, 25));
-                        TextureBrush tBrush = new TextureBrush(image);
-                        insert.FillRectangle(tBrush, i * 25, height * 25, 25, 25);
-                        if (height != 0)
+                        for (int i = 0; i < 12; i++)
                         {
-                            area[i, height] = blockValue(color, i);
-                        }
-                        else
-                        {
-                            GameOver();
-                            mut.ReleaseMutex();
-                            break;
-                        }
+                            string color = ramdomBlock();
+                            Bitmap image = new Bitmap(color);
+                            image = resizeImage(image, new Size(25, 25));
+                            TextureBrush tBrush = new TextureBrush(image);
+                            insert.FillRectangle(tBrush, i * 25, height * 25, 25, 25);
+                            if (height != 0)
+                            {
+                                area[i, height] = blockValue(color, i);
+                            }
+                            else
+                            {
+                                GameOver();
+                                mut.ReleaseMutex();
+                                break;
+                            }
 
-                    }
+                        }
                     height--;
+                    } 
                     eraseBlock();
                     gravity();
                     gameGrid.Image = baseImage;
+                    if (!generate)
+                        checkIfTimeIsElapsed();
                 }
                 catch(Exception e)
                 {
@@ -313,16 +319,15 @@ namespace Pannel_de_cajoux
                 {
                     CursorY = 0;
                 }
-                if (CursorX > 12)
+                if (CursorX + 1 > 11)
                 {
-                    CursorX = 12;
+                    CursorX = 10;
                 }
-                if (CursorY < height)
+                if (CursorY > 15)
                 {
-                    CursorY = height;
+                    CursorY = 15;
                 }
                 displayCursor();
-                gameGrid.Update();
             }
             finally
             {
@@ -422,7 +427,7 @@ namespace Pannel_de_cajoux
                             area[j, h] = 0;
                             area[u, h] = 0;
                             score++;
-                            baseSpeed -= 10;
+                            baseSpeed -= 30;
                             this.BeginInvoke(new MethodInvoker(delegate
                             {
                                 scoreLabel.Text = "score : " + score;
@@ -437,7 +442,7 @@ namespace Pannel_de_cajoux
                             area[i, f] = 0;
                             area[i, y] = 0;
                             score++;
-                            baseSpeed -= 10;
+                            baseSpeed -= 30;
                             this.BeginInvoke(new MethodInvoker(delegate
                             {
                                 scoreLabel.Text = "score : " + score;
@@ -706,17 +711,10 @@ namespace Pannel_de_cajoux
                             return;
                         case "TimeStop":
                             Console.WriteLine("Stop!");
-                            var pause = new Stopwatch();
-                            pause.Start();
-                            while (pause.ElapsedMilliseconds != 10000)
-                            {
-                                gameOn = false;
-                                continue;
-                            }
-                            pause.Stop();
-                            gameOn = true;
-                            task = Task.Run(() => generateBlock());
-                            cooldown = 30;
+                            stop = new Stopwatch();
+                            stop.Start();
+                            generate = false;
+                            cooldown = 70;
                             Console.WriteLine("finished!");
                             return;
                         case "circularBlade":
@@ -803,6 +801,15 @@ namespace Pannel_de_cajoux
             finally
             {
                 connection.Close();
+            }
+        }
+
+        private void checkIfTimeIsElapsed()
+        {
+            if(stop.ElapsedMilliseconds >= 10000)
+            {
+                generate = true;
+                stop.Stop();
             }
         }
     }

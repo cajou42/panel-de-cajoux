@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,10 +16,12 @@ namespace Pannel_de_cajoux
     {
         private MySqlCommand query;
         private int id;
+        private HashAlgorithm sha = SHA256.Create();
         public profileParameter(int ids)
         {
             InitializeComponent();
             id = ids;
+            textBox2.PasswordChar = '*';
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -50,8 +53,9 @@ namespace Pannel_de_cajoux
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string password = textBox2.Text;
-            string test = String.Format("UPDATE `user` SET Password = '{0}' WHERE Id = '{1}'", password, id);
+            byte[] bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(textBox2.Text));
+            var hashPassword = System.Text.Encoding.Default.GetString(bytes);
+            string test = String.Format("UPDATE `user` SET Password = '{0}' WHERE Id = '{1}'", hashPassword, id);
             string connString = "server=localhost;port=9000;user id=root; password=example; database=game-db; SslMode=none";
             MySqlConnection connection = new MySqlConnection(@connString);
             query = new MySqlCommand(test, connection);
